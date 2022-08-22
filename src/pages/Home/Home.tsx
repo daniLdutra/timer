@@ -11,7 +11,8 @@ import {
 } from './styles';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as zod from 'zod';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { differenceInSeconds } from 'date-fns'
 
 const formValidationSchema = zod.object({
   task: zod.string().min(1, 'Informe a tarefa'),
@@ -33,13 +34,14 @@ interface Cycle {
   id: string;
   task: string;
   minutesAmount: number;
+  startDate: Date;
 }
 
 export function Home() {
   const [cycles, setCycles] = useState<Cycle[]>([]);
-  const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
+  const [activeCycleId, setActiveCycleId] = useState<string | null>(null);
   //novo estado criado irá armazenar a quantidade de segundos que já se passaram, desde que o ciclo foi criado
-  const [amountSecondsPassed, setAmountSecondsPassed ] = useState(0)
+  const [amountSecondsPassed, setAmountSecondsPassed] = useState(0);
 
   const { register, handleSubmit, watch, reset } = useForm<NewFormData>({
     resolver: zodResolver(formValidationSchema),
@@ -49,43 +51,50 @@ export function Home() {
     },
   });
 
+  const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId);
+
+  useEffect(() => {
+    if (activeCycle) {
+      setInterval(() => {
+        setAmountSecondsPassed(differenceInSeconds(new Date(), activeCycle.startDate))
+      }, 1000);
+    }
+  }, [activeCycle]);
+
   function handleCreateNewCicle(data: NewFormData) {
-    const id = String(new Date().getTime())
+    const id = String(new Date().getTime());
 
     const newCycle: Cycle = {
       id,
       task: data.task,
-      minutesAmount: data.minutesAmount
+      minutesAmount: data.minutesAmount,
+      startDate: new Date()
     };
 
-    setCycles((state)=> [...state, newCycle])
-    setActiveCycleId(id)
+    setCycles((state) => [...state, newCycle]);
+    setActiveCycleId(id);
 
     reset();
   }
-
-  const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
-    console.log(activeCycle);
-
 
   const task = watch('task'); //watch: permite monitorar o formulário = "controller"
   const isSubmitDisable = !task;
 
   //variável converte o número de minutos inserido no ciclo pelo usuário em segundos.
   // verifica-se se o ciclo está ativo, variável será o número de minutos do ciclo * 60 (1 minuto = 60 seg), se não tiver um ciclo ativo a variável será 0
-  const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0
+  const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0;
 
   //calcula-se o total de segundos pelo que já passou
-  const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0
+  const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0;
 
   //para exibir em tela é necessário exibir em minutos e segundos, calcula-se a partir do total de segundos, quantos minutos se tem dentro do total de segundos.
-  const minutesAmount = Math.floor(currentSeconds / 60)
+  const minutesAmount = Math.floor(currentSeconds / 60);
 
   //calcular quantos segundos se tem no resto da divisão
-  const secondsAmount = currentSeconds % 60
+  const secondsAmount = currentSeconds % 60;
 
-  const minutes = String(minutesAmount).padStart(2, '0')
-  const seconds= String(secondsAmount).padStart(2, '0')
+  const minutes = String(minutesAmount).padStart(2, '0');
+  const seconds = String(secondsAmount).padStart(2, '0');
 
   return (
     <HomeContainer>
