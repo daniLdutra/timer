@@ -12,7 +12,7 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as zod from 'zod';
 import { useEffect, useState } from 'react';
-import { differenceInSeconds } from 'date-fns'
+import { differenceInSeconds } from 'date-fns';
 
 const formValidationSchema = zod.object({
   task: zod.string().min(1, 'Informe a tarefa'),
@@ -54,11 +54,19 @@ export function Home() {
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId);
 
   useEffect(() => {
+    let interval: number;
+
     if (activeCycle) {
-      setInterval(() => {
-        setAmountSecondsPassed(differenceInSeconds(new Date(), activeCycle.startDate))
+      interval = setInterval(() => {
+        setAmountSecondsPassed(
+          differenceInSeconds(new Date(), activeCycle.startDate)
+        );
       }, 1000);
     }
+
+    return () => {
+      clearInterval(interval);
+    };
   }, [activeCycle]);
 
   function handleCreateNewCicle(data: NewFormData) {
@@ -68,11 +76,12 @@ export function Home() {
       id,
       task: data.task,
       minutesAmount: data.minutesAmount,
-      startDate: new Date()
+      startDate: new Date(),
     };
 
     setCycles((state) => [...state, newCycle]);
     setActiveCycleId(id);
+    setAmountSecondsPassed(0);
 
     reset();
   }
