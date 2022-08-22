@@ -30,7 +30,7 @@ const formValidationSchema = zod.object({
 type NewFormData = zod.infer<typeof formValidationSchema>;
 
 export function Home() {
-  const { register, handleSubmit, watch } = useForm<NewFormData>({
+  const { register, handleSubmit, watch, reset } = useForm<NewFormData>({
     resolver: zodResolver(formValidationSchema),
     defaultValues: {
       task: '',
@@ -40,6 +40,7 @@ export function Home() {
 
   function handleCreateNewCicle(data: NewFormData) {
     // console.log(data.task)
+    reset()
   }
 
   const task = watch('task'); //watch: permite monitorar o formulário = "controller"
