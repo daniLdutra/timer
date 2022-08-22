@@ -9,27 +9,41 @@ import {
   StartCountdownButton,
   TaskInput,
 } from './styles';
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as zod from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as zod from 'zod';
+import { TypeOf } from 'zod';
 
 const formValidationSchema = zod.object({
   task: zod.string().min(1, 'Informe a tarefa'),
-  minutesAmount: zod.number()
-  .min(5, 'O ciclo precisa ser de no mínimo 5 minutos')
-  .max(60, 'O ciclo precisa ser de no máximo 60 minutos') 
-})
+  // owner: zod.string().optional(), exemplo
+  minutesAmount: zod
+    .number()
+    .min(5, 'O ciclo precisa ser de no mínimo 5 minutos')
+    .max(60, 'O ciclo precisa ser de no máximo 60 minutos'),
+});
+
+// interface NewFormData{
+//   task: string
+//   minutesAmount: number
+// }
+
+type NewFormData = zod.infer<typeof formValidationSchema>;
 
 export function Home() {
-  const { register, handleSubmit, watch } = useForm({
+  const { register, handleSubmit, watch } = useForm<NewFormData>({
     resolver: zodResolver(formValidationSchema),
-  })
+    defaultValues: {
+      task: '',
+      minutesAmount: 0,
+    },
+  });
 
-  function handleCreateNewCicle(data: any){
-    console.log(data)
+  function handleCreateNewCicle(data: NewFormData) {
+    // console.log(data.task)
   }
 
-  const task = watch("task") //watch: permite monitorar o formulário = "controller"
-  const isSubmitDisable = !task
+  const task = watch('task'); //watch: permite monitorar o formulário = "controller"
+  const isSubmitDisable = !task;
 
   return (
     <HomeContainer>
@@ -40,7 +54,7 @@ export function Home() {
             id="task"
             list="task-suggestions"
             placeholder="Dê um nome para seu projeto"
-            {...register("task")}
+            {...register('task')}
           />
 
           <datalist id="task-suggestions">
@@ -58,7 +72,7 @@ export function Home() {
             step={5}
             min={5}
             max={60}
-            {...register("minutesAmount", {valueAsNumber: true})}
+            {...register('minutesAmount', { valueAsNumber: true })}
           />
 
           <span>minutos.</span>
