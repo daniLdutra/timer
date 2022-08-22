@@ -11,7 +11,7 @@ import {
 } from './styles';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as zod from 'zod';
-import { TypeOf } from 'zod';
+import { useState } from 'react';
 
 const formValidationSchema = zod.object({
   task: zod.string().min(1, 'Informe a tarefa'),
@@ -29,7 +29,16 @@ const formValidationSchema = zod.object({
 
 type NewFormData = zod.infer<typeof formValidationSchema>;
 
+interface Cycle {
+  id: string;
+  task: string;
+  minutesAmount: number;
+}
+
 export function Home() {
+  const [cycles, setCycles] = useState<Cycle[]>([]);
+  const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
+
   const { register, handleSubmit, watch, reset } = useForm<NewFormData>({
     resolver: zodResolver(formValidationSchema),
     defaultValues: {
@@ -39,9 +48,23 @@ export function Home() {
   });
 
   function handleCreateNewCicle(data: NewFormData) {
-    // console.log(data.task)
-    reset()
+    const id = String(new Date().getTime())
+
+    const newCycle: Cycle = {
+      id,
+      task: data.task,
+      minutesAmount: data.minutesAmount
+    };
+
+    setCycles((state)=> [...state, newCycle])
+    setActiveCycleId(id)
+
+    reset();
   }
+
+  const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
+    console.log(activeCycle);
+
 
   const task = watch('task'); //watch: permite monitorar o formulário = "controller"
   const isSubmitDisable = !task;
