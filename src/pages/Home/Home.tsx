@@ -86,9 +86,6 @@ export function Home() {
     reset();
   }
 
-  const task = watch('task'); //watch: permite monitorar o formulário = "controller"
-  const isSubmitDisable = !task;
-
   //variável converte o número de minutos inserido no ciclo pelo usuário em segundos.
   // verifica-se se o ciclo está ativo, variável será o número de minutos do ciclo * 60 (1 minuto = 60 seg), se não tiver um ciclo ativo a variável será 0
   const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0;
@@ -104,6 +101,15 @@ export function Home() {
 
   const minutes = String(minutesAmount).padStart(2, '0');
   const seconds = String(secondsAmount).padStart(2, '0');
+
+  useEffect(() => {
+    if (activeCycle) {
+      document.title = `${minutes}:${seconds}`;
+    }
+  }, [minutes, seconds, activeCycle]);
+
+  const task = watch('task'); //watch: permite monitorar o formulário = "controller"
+  const isSubmitDisable = !task;
 
   return (
     <HomeContainer>
