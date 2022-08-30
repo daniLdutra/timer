@@ -3,7 +3,7 @@ import { FormProvider, useForm } from 'react-hook-form';
 import {
   HomeContainer,
   StartCountdownButton,
-  StopCountdownButton
+  StopCountdownButton,
 } from './styles';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as zod from 'zod';
@@ -11,7 +11,6 @@ import { NewCycleForm } from './components/NewCycleForm';
 import { Countdown } from './components/Countdown';
 import { useContext } from 'react';
 import { CyclesContext } from '../../contexts/CyclesContext';
-
 
 const formValidationSchema = zod.object({
   task: zod.string().min(1, 'Informe a tarefa'),
@@ -25,7 +24,8 @@ const formValidationSchema = zod.object({
 type NewFormData = zod.infer<typeof formValidationSchema>;
 
 export function Home() {
-  const {activeCycle, createNewCycle, interruptCurrentCycle} = useContext(CyclesContext)
+  const { activeCycle, createNewCycle, interruptCurrentCycle } =
+    useContext(CyclesContext);
 
   const newCycleForm = useForm<NewFormData>({
     resolver: zodResolver(formValidationSchema),
@@ -39,18 +39,30 @@ export function Home() {
   const task = watch('task'); //watch: permite monitorar o formulário = "controller"
   const isSubmitDisable = !task;
 
-  function handleCreateNewCycle (data: NewFormData){
-    createNewCycle(data)
-    reset()
+  function handleCreateNewCycle(data: NewFormData) {
+    createNewCycle(data);
+    reset();
+  }
+
+  function markCurrentCycleAsFinished() {
+    setCycles((state) =>
+      state.map((cycle) => {
+        if (cycle.id === activeCycleId) {
+          return { ...cycle, finishedDate: new Date() };
+        } else {
+          return cycle;
+        }
+      })
+    );
   }
 
   return (
     <HomeContainer>
       <form action="" onSubmit={handleSubmit(handleCreateNewCycle)}>
-          <FormProvider {...newCycleForm}>
-            <NewCycleForm />
-          </FormProvider>
-          <Countdown />
+        <FormProvider {...newCycleForm}>
+          <NewCycleForm />
+        </FormProvider>
+        <Countdown />
 
         {activeCycle ? (
           <StopCountdownButton onClick={interruptCurrentCycle} type="button">
