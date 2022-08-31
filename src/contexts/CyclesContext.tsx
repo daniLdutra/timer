@@ -34,13 +34,13 @@ export const CyclesContext = createContext({} as CyclesContextType);
 export function CyclesContextProvider({
   children,
 }: CyclesContextProviderProps) {
-  // setCycles funciona como método para disparar a action e não mais para alterar o valor de cycles, mudado nome para dispatch.
-    const [cycles, dispatch] = useReducer((state: Cycle[], action: any)=>{
-      if(action.type === 'ADD_NEW_CYCLE'){
-        return [...state, action.payload.newCycle]
-      }
-      return state
-    }, [])
+  // setCycles funciona como método para disparar a action e não mais para alterar o valor de cycles, alterado nome para dispatch.
+  const [cycles, dispatch] = useReducer((state: Cycle[], action: any) => {
+    if (action.type === 'ADD_NEW_CYCLE') {
+      return [...state, action.payload.newCycle];
+    }
+    return state;
+  }, []);
 
   // const [cycles, setCycles] = useState<Cycle[]>([]);
   const [activeCycleId, setActiveCycleId] = useState<string | null>(null);
@@ -49,15 +49,24 @@ export function CyclesContextProvider({
 
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId);
 
-  function markCurrentCycleAsFinished(){
+  function markCurrentCycleAsFinished() {
     dispatch({
       type: 'MARK_CURRENT_CYCLE_AS_FINISHED',
       payload: {
-          activeCycleId,
-      }
-    })
-  }  
-
+        activeCycleId,
+      },
+    });
+    //   setCycles((state) =>
+    //     state.map((cycle) => {
+    //       if (cycle.id === activeCycleId) {
+    //         return { ...cycle, finishedDate: new Date() };
+    //       } else {
+    //         return cycle;
+    //       }
+    //     })
+    //   );
+    // }
+  }
 
   function createNewCycle(data: CreateCycleData) {
     const id = String(new Date().getTime());
@@ -72,9 +81,9 @@ export function CyclesContextProvider({
     dispatch({
       type: 'ADD_NEW_CYCLE',
       payload: {
-        newCycle
-      }
-    })
+        newCycle,
+      },
+    });
     // setCycles((state) => [...state, newCycle]);
     setActiveCycleId(id);
     setAmountSecondsPassed(0);
@@ -85,8 +94,8 @@ export function CyclesContextProvider({
       type: 'INTERRUPT_CURRENT_CYCLE',
       payload: {
         activeCycleId,
-      }
-    })
+      },
+    });
     // setCycles((state) =>
     //   state.map((cycle) => {
     //     if (cycle.id === activeCycleId) {
