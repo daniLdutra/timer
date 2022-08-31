@@ -29,23 +29,52 @@ interface CyclesContextProviderProps {
   children: ReactNode;
 }
 
+interface CyclesState {
+  cycles: Cycle[];
+  activeCycleId: string | null;
+}
+
 export const CyclesContext = createContext({} as CyclesContextType);
 
 export function CyclesContextProvider({
   children,
 }: CyclesContextProviderProps) {
   // setCycles funciona como método para disparar a action e não mais para alterar o valor de cycles, alterado nome para dispatch.
-  const [cycles, dispatch] = useReducer((state: Cycle[], action: any) => {
-    if (action.type === 'ADD_NEW_CYCLE') {
-      return [...state, action.payload.newCycle];
+  //state: irá receber tanto o valor do novo ciclo, quanto o ciclo ativo, ambos serão controlados pelo mesmo estado. Sem a necessidade de vários estados dentro do componente.
+  const [cyclesState, dispatch] = useReducer(
+    (state: CyclesState, action: any) => {
+      if (action.type === 'ADD_NEW_CYCLE') {
+        return {
+          ...state,
+          cycles: [...state.cycles, action.payload.newCycle],
+          activeCycleId: action.payload.newCycle.id,
+        };
+      }
+      if (action.type === 'INTERRUPT_CURRENT_CYCLE') {
+        return {
+          ...state,
+          cycles: state.cycles.map((cycle) => {
+            if (cycle.id === state.activeCycleId) {
+              return { ...cycle, interruptedDate: new Date() };
+            } else {
+              return cycle;
+            }
+          }),
+          activeCycleId: null,
+        };
+      }
+      return state;
+    },
+    {
+      cycles: [],
+      activeCycleId: null,
     }
-    return state;
-  }, []);
+  );
 
-  // const [cycles, setCycles] = useState<Cycle[]>([]);
-  const [activeCycleId, setActiveCycleId] = useState<string | null>(null);
   //novo estado criado irá armazenar a quantidade de segundos que já se passaram, desde que o ciclo foi criado
   const [amountSecondsPassed, setAmountSecondsPassed] = useState(0);
+
+  const { cycles, activeCycleId } = cyclesState;
 
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId);
 
@@ -85,7 +114,6 @@ export function CyclesContextProvider({
       },
     });
     // setCycles((state) => [...state, newCycle]);
-    setActiveCycleId(id);
     setAmountSecondsPassed(0);
   }
 
@@ -96,16 +124,6 @@ export function CyclesContextProvider({
         activeCycleId,
       },
     });
-    // setCycles((state) =>
-    //   state.map((cycle) => {
-    //     if (cycle.id === activeCycleId) {
-    //       return { ...cycle, interruptedDate: new Date() };
-    //     } else {
-    //       return cycle;
-    //     }
-    //   })
-    // );
-    setActiveCycleId(null);
   }
 
   return (
