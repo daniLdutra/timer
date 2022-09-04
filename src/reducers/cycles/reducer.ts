@@ -50,7 +50,6 @@ export function cyclesReducer(state: CyclesState, action: any) {
           (draft.cycles[currentCycleIndex].finishedDate = new Date());
       });
     }
-    
     default:
       return state;
   }

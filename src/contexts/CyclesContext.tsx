@@ -1,4 +1,5 @@
-import { createContext, ReactNode, useReducer, useState } from 'react';
+import it from 'date-fns/esm/locale/it/index.js';
+import { createContext, ReactNode, useEffect, useReducer, useState } from 'react';
 import { addNewCycleAction, interruptCurrentCycleAction, markCurrentCycleAsFinishedAction } from '../reducers/cycles/actions';
 import { Cycle, cyclesReducer } from '../reducers/cycles/reducer';
 
@@ -30,6 +31,13 @@ export function CyclesContextProvider({
   const [cyclesState, dispatch] = useReducer(cyclesReducer, {
     cycles: [],
     activeCycleId: null,
+  }, ()=>{ //recupera os dados do localStorage
+    const storedStateAsJSON = localStorage.getItem(
+      '@timer:cycles-state-1.0.0'
+    )
+    if(storedStateAsJSON){
+      return JSON.parse(storedStateAsJSON)
+    }
   });
 
   //novo estado criado irá armazenar a quantidade de segundos que já se passaram, desde que o ciclo foi criado
@@ -38,6 +46,12 @@ export function CyclesContextProvider({
   const { cycles, activeCycleId } = cyclesState;
 
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId);
+
+  //salva dados no localStorage
+  useEffect(()=>{
+    const stateJson = JSON.stringify(cyclesState)
+    localStorage.setItem('@timer:cycles-state-1.0.0', stateJson)
+  }, [cyclesState])
 
   function markCurrentCycleAsFinished() {
     dispatch(markCurrentCycleAsFinishedAction());
