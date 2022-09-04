@@ -1,6 +1,17 @@
+import { differenceInSeconds } from 'date-fns';
 import it from 'date-fns/esm/locale/it/index.js';
-import { createContext, ReactNode, useEffect, useReducer, useState } from 'react';
-import { addNewCycleAction, interruptCurrentCycleAction, markCurrentCycleAsFinishedAction } from '../reducers/cycles/actions';
+import {
+  createContext,
+  ReactNode,
+  useEffect,
+  useReducer,
+  useState,
+} from 'react';
+import {
+  addNewCycleAction,
+  interruptCurrentCycleAction,
+  markCurrentCycleAsFinishedAction,
+} from '../reducers/cycles/actions';
 import { Cycle, cyclesReducer } from '../reducers/cycles/reducer';
 
 interface CreateCycleData {
@@ -28,30 +39,40 @@ export function CyclesContextProvider({
 }: CyclesContextProviderProps) {
   // setCycles funciona como método para disparar a action e não mais para alterar o valor de cycles, alterado nome para dispatch.
   //state: irá receber tanto o valor do novo ciclo, quanto o ciclo ativo, ambos serão controlados pelo mesmo estado. Sem a necessidade de vários estados dentro do componente.
-  const [cyclesState, dispatch] = useReducer(cyclesReducer, {
-    cycles: [],
-    activeCycleId: null,
-  }, ()=>{ //recupera os dados do localStorage
-    const storedStateAsJSON = localStorage.getItem(
-      '@timer:cycles-state-1.0.0'
-    )
-    if(storedStateAsJSON){
-      return JSON.parse(storedStateAsJSON)
+  const [cyclesState, dispatch] = useReducer(
+    cyclesReducer,
+    {
+      cycles: [],
+      activeCycleId: null,
+    },
+    () => {
+      //recupera os dados do localStorage
+      const storedStateAsJSON = localStorage.getItem(
+        '@timer:cycles-state-1.0.0'
+      );
+      if (storedStateAsJSON) {
+        return JSON.parse(storedStateAsJSON);
+      }
     }
-  });
-
-  //novo estado criado irá armazenar a quantidade de segundos que já se passaram, desde que o ciclo foi criado
-  const [amountSecondsPassed, setAmountSecondsPassed] = useState(0);
+  );
 
   const { cycles, activeCycleId } = cyclesState;
 
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId);
 
+  //novo estado criado irá armazenar a quantidade de segundos que já se passaram, desde que o ciclo foi criado
+  const [amountSecondsPassed, setAmountSecondsPassed] = useState(() => {
+    if (activeCycle) {
+      return differenceInSeconds(new Date(), new Date(activeCycle.startDate));
+    }
+    return 0;
+  });
+
   //salva dados no localStorage
-  useEffect(()=>{
-    const stateJson = JSON.stringify(cyclesState)
-    localStorage.setItem('@timer:cycles-state-1.0.0', stateJson)
-  }, [cyclesState])
+  useEffect(() => {
+    const stateJson = JSON.stringify(cyclesState);
+    localStorage.setItem('@timer:cycles-state-1.0.0', stateJson);
+  }, [cyclesState]);
 
   function markCurrentCycleAsFinished() {
     dispatch(markCurrentCycleAsFinishedAction());
@@ -72,7 +93,7 @@ export function CyclesContextProvider({
   }
 
   function interruptCurrentCycle() {
-    dispatch(interruptCurrentCycleAction())
+    dispatch(interruptCurrentCycleAction());
   }
 
   return (
